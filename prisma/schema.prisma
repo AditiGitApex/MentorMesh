@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  enrollmentNo String?  @unique
+  email        String   @unique
+  name         String
+  passwordHash String
+  avatar       String
+  bio          String?
+  reputation   Int      @default(0)
+  branch       String?
+  division     String?
+  rollNo       Int?
+  batch        String?
+  section      String?
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  questions     Question[]
+  answers       Answer[]
+  questionVotes QuestionVote[]
+  answerVotes   AnswerVote[]
+  bookmarks     Bookmark[]
+  notifications Notification[]
+  tagFollows    TagFollow[]
+
+  @@index([reputation(sort: Desc)])
+  @@index([name])
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  votes       Int      @default(0)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  answers       Answer[]
+  tags          QuestionTag[]
+  votesRel      QuestionVote[]
+  bookmarks     Bookmark[]
+  notifications Notification[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([votes(sort: Desc)])
+  @@index([authorId])
+}
+
+model Tag {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  questions QuestionTag[]
+  followers TagFollow[]
+}
+
+model TagFollow {
+  userId    String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+  @@index([tagId])
+}
+
+model QuestionTag {
+  questionId String
+  tagId      String
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([questionId, tagId])
+  @@index([tagId])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  content    String
+  votes      Int      @default(0)
+  isAccepted Boolean  @default(false)
+  questionId String
+  authorId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  question Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  author   User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  votesRel AnswerVote[]
+
+  @@index([questionId])
+  @@index([authorId])
+}
+
+model QuestionVote {
+  id         String @id @default(cuid())
+  value      Int
+  userId     String
+  questionId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+  @@index([questionId])
+}
+
+model AnswerVote {
+  id       String @id @default(cuid())
+  value    Int
+  userId   String
+  answerId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answer Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, answerId])
+  @@index([answerId])
+}
+
+model Bookmark {
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, questionId])
+  @@index([questionId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  userId    String
+  questionId String?
+  createdAt DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, read, createdAt(sort: Desc)])
+}
