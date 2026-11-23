@@ -10,6 +10,8 @@
 
 @layer base {
   :root {
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
     /* Obsidian earth — matte, elite, premium dark neutrals with sage signal */
     --background: 38 12% 96%;
     --foreground: 28 10% 10%;

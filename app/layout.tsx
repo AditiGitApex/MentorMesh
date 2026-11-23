@@ -1,22 +1,7 @@
 import type { Metadata } from "next"
-import { Fraunces, DM_Sans } from "next/font/google"
 import "./globals.css"
 import AppShell from "@/components/layout/AppShell"
 import { ThemeProvider } from "@/components/theme-provider"
-
-const display = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["500", "600", "700"],
-  display: "swap",
-})
-
-const body = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-body",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-})
 
 export const metadata: Metadata = {
   title: "MentorMesh — Knowledge, woven",
@@ -30,7 +15,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${display.variable} ${body.variable}`}>
+    <html lang="en" suppressHydrationWarning className="font-body">
+      <head>
+        {/* Load fonts via CSS links — more reliable on Vercel than next/font Google fetch */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         className="min-h-screen flex flex-col studio-atmosphere text-foreground relative max-w-[100vw]"
         style={{ overflowX: "clip" }}
